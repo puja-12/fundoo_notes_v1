@@ -1,18 +1,17 @@
-from django.contrib.auth.forms import UserCreationForm
-from django.http import JsonResponse
 import json
 import logging
-from user.models import  User
+
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.views import APIView
+
+from user.serializers import RegisterSerializer
 
 # Create your views here.
 
-from django.views.decorators.csrf import csrf_exempt
-
-from django.contrib.auth import authenticate, login
 
 logger = logging.getLogger('django')
-
-
 @csrf_exempt
 def register_api(request):
     """
@@ -21,12 +20,13 @@ def register_api(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            serializer = RegisterSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info("User successfully Registered ")
+                return JsonResponse({'message': 'Register successfully'})
+            return JsonResponse({'message': 'invalid details'}, serializer.errors)
 
-            user = User.objects.create_user(**data)
-            print(user)
-            logger.info("User successfully Registered ")
-
-            return JsonResponse({'message': f"{user.username} Register successfully"})
         except Exception as e:
             logger.exception(e)
             return JsonResponse({'message': 'invalid details'})
@@ -40,21 +40,15 @@ def log_in(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username')
-            password = data.get('password')
-            user = authenticate( username=username, password=password)
 
-            if user is not None:
-
+            user = authenticate(**data)
+            if user:
                 logger.info("User is successfully logged in")
                 return JsonResponse({'success': True, 'message': 'Login Success'})
 
-            return JsonResponse({'success': False, 'message': 'Login failed!'})
+            return JsonResponse({'success': False, 'message': 'Invalid credentials used!'})
 
         except Exception as e:
             logger.exception(e)
             return JsonResponse({'success': False, 'message': 'Login failed!, Something Went Wrong',
                                  'data': str(e)})
-
-
-
