@@ -1,54 +1,54 @@
-import json
-import logging
-
 from django.contrib.auth import authenticate
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from user.serializers import RegisterSerializer
+import logging
+from rest_framework import status
 
 # Create your views here.
 
 
 logger = logging.getLogger('django')
-@csrf_exempt
-def register_api(request):
-    """
-    post method for registering a user
-    """
-    if request.method == 'POST':
+
+
+class UserRegisterApiView(APIView):
+
+    def post(self, request):
+        """
+        post method for registering a user
+        """
         try:
-            data = json.loads(request.body)
+            data = request.data
             serializer = RegisterSerializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 logger.info("User successfully Registered ")
-                return JsonResponse({'message': 'Register successfully'})
-            return JsonResponse({'message': 'invalid details'}, serializer.errors)
+                return Response({'message': 'Register successfully', 'data': serializer.data},
+                                status=status.HTTP_201_CREATED)
+            return Response({'message': 'serializer.errors'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         except Exception as e:
             logger.exception(e)
-            return JsonResponse({'message': 'invalid details'})
+            return Response({'message': 'invalid details'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def log_in(request):
-    """
-     post method for checking login operation
-    """
-    if request.method == 'POST':
+class UserLoginApi(APIView):
+
+    def post(self, request):
+        """
+         post method for checking login operation
+        """
+
         try:
-            data = json.loads(request.body)
 
-            user = authenticate(**data)
+            user = authenticate(**request.data)
             if user:
                 logger.info("User is successfully logged in")
-                return JsonResponse({'success': True, 'message': 'Login Success'})
+                return Response({'success': True, 'message': 'Login Success'})
 
-            return JsonResponse({'success': False, 'message': 'Invalid credentials used!'})
+            return Response({'success': False, 'message': 'Invalid credentials used!'},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
         except Exception as e:
             logger.exception(e)
-            return JsonResponse({'success': False, 'message': 'Login failed!, Something Went Wrong',
-                                 'data': str(e)})
+            return Response({'success': False, 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
