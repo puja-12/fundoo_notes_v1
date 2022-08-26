@@ -44,7 +44,7 @@ class UserLoginApi(APIView):
             user = authenticate(**request.data)
             if user:
                 logger.info("User is successfully logged in")
-                return Response({'success': True, 'message': 'Login Success'})
+                return Response({'success': True, 'message': 'Login Success'},status=status.HTTP_200_OK)
 
             return Response({'success': False, 'message': 'Invalid credentials used!'},
                             status=status.HTTP_401_UNAUTHORIZED)

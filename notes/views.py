@@ -1,13 +1,9 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-import user
 from notes.serializers import NotesSerializer
-from user.models import User
 from notes.models import Notes
 import logging
-from django.shortcuts import render
 
 logger = logging.getLogger('django')
 
@@ -65,19 +61,22 @@ class NotesAPIView(APIView):
         for updating notes for valid user
         """
         try:
-            pk = request.data.get('user')
-            data = Notes.objects.get(pk=pk)
-            serializer = NotesSerializer(data, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
+
+            note = Notes.objects.get(user=request.data.get('user_id'))
+            if note:
+
+                note.title = request.data.get('title')
+                note.description= request.data.get('description')
+                note.save()
 
             return Response({'success': True,
-                             'message': "Successfully updated the notes", }, status=status.HTTP_200_OK)
+                             'message': "Notes updated Successfully"},
+                            status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.exception(e)
             return Response({'success': False,
-                             'message': "Something went wrong",
+                             'message': "Something went wrong", 'data': str(e)
                              }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
