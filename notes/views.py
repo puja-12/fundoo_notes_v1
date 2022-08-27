@@ -65,11 +65,10 @@ class NotesAPIView(APIView):
         for updating notes for valid user
         """
         try:
-            pk = request.data.get('user')
-            data = Notes.objects.get(pk=pk)
-            serializer = NotesSerializer(data, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
+            note = Notes.objects.get(pk=request.data.get('id'))
+            serializer = NotesSerializer(note, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
             return Response({'success': True,
                              'message': "Successfully updated the notes", }, status=status.HTTP_200_OK)
