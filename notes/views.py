@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from notes.serializers import NotesSerializer
 from notes.models import Notes
 import logging
+from rest_framework.serializers import ValidationError
 
 logger = logging.getLogger('django')
 
@@ -26,6 +27,13 @@ class NotesAPIView(APIView):
             return Response({'success': True,
                              'message': "Successfully retrieve the notes",
                              'data': serialized_data, }, status=status.HTTP_200_OK)
+
+
+        except ValidationError as e:
+            return Response({'success': False,
+                             'message': e.detail
+                             }, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
             logger.exception(e)
             return Response({'success': False,
@@ -40,13 +48,18 @@ class NotesAPIView(APIView):
         try:
 
             serializer = NotesSerializer(data=request.data)
-            serializer.is_valid()
+            serializer.is_valid(raise_exception=True)
             serializer.save()
 
             logger.info("Notes created successfully")
             return Response({'success': True,
                              'message': "Notes Create Successfully", "data": serializer.data},
                             status=status.HTTP_201_CREATED)
+
+        except ValidationError as e:
+            return Response({'success': False,
+                             'message': e.detail
+                             }, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             logger.exception(e)
@@ -62,16 +75,18 @@ class NotesAPIView(APIView):
         """
         try:
 
-            note = Notes.objects.get(user=request.data.get('user_id'))
-            if note:
-
-                note.title = request.data.get('title')
-                note.description= request.data.get('description')
-                note.save()
-
+            note = Notes.objects.get(pk=request.data.get('id'))
+            serializer = NotesSerializer(note, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response({'success': True,
                              'message': "Notes updated Successfully"},
                             status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            return Response({'success': False,
+                             'message': e.detail
+                             }, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
             logger.exception(e)

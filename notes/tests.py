@@ -1,12 +1,73 @@
+import json
+
 import pytest
 from rest_framework.reverse import reverse
 
 
-@pytest.mark.django_db
-def test_post_user_with_success_response( client, django_user_model, authentication_user):
+@pytest.fixture
+def authentication_user(client, django_user_model, db):
+    """
+    creating user id for note app crud operation testing
+    """
+    user = django_user_model.objects.create_user(username='pooja123', email='puja@gmail.com', phone=123456789,
+                                                 location='delhi',
+                                                 password='12345678')
+    return user.id
 
+
+@pytest.mark.django_db
+def test_post_user_with_success_response(client, authentication_user):
     user_id = authentication_user
-    url = reverse("notedetails")
-    data = {"title": "tea", "description": "famous in india", "user": user_id}
+    url = reverse("note_api")
+    data = {"title": "Django", "description": "framework", "user": user_id}
     response = client.post(url, data, content_type='application/json')
     assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_note_put_api_response(client, authentication_user):
+    user_id = authentication_user
+    # create note
+    url = reverse("note_api")
+    data = {"title": "Django", "description": "framework", "user": user_id}
+    response = client.post(url, data, content_type='application/json')
+    json_data = json.loads(response.content)
+    assert response.status_code == 201
+    note_id = json_data.get('data').get('id')
+    # update note
+    url = reverse("note_api")
+    data = {"id": note_id, "title": "Fruit", "description": "Apple", "user": user_id}
+    response = client.put(url, data, content_type='application/json')
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_note_get_api_response(client, authentication_user):
+    user_id = authentication_user
+    # create note
+    url = reverse("note_api")
+    data = {"title": "Fruit", "description": "Apple", "user": user_id}
+    response = client.post(url, data, content_type='application/json')
+    assert response.status_code == 201
+    # get note
+    url = reverse('note_api')
+    response = client.get(url, content_type='application/json')
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_note_delete_response(client, authentication_user):
+    user_id = authentication_user
+    # new note
+    url = reverse('note_api')
+    data = {'title': 'Django', 'description': 'framework', "user": user_id}
+    response = client.post(url, data, content_type='application/json')
+    json_data = json.loads(response.content)
+    assert response.status_code == 201
+    note_id = json_data.get('data').get('id')
+    # Delete notes
+    url = reverse("note_api")
+    data = {'id': note_id}
+    response = client.delete(url, data, content_type='application/json')
+    assert response.status_code == 200
+    assert response.data['message'] == 'Notes deleted successfully'
