@@ -1,18 +1,11 @@
 import logging
-
-from django.conf import settings
 from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
-
-import user
 from user.models import User
 from user.serializers import RegisterSerializer
-from django.core.mail import send_mail
-
-# Create your views here.
 from user.token import Jwt
 from user.utils import Email
 
@@ -27,6 +20,7 @@ class UserRegisterApiView(APIView):
         """
         try:
             data = request.data
+            print(data)
             serializer = RegisterSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -57,7 +51,8 @@ class UserLoginApi(APIView):
         try:
 
             user = authenticate(**request.data)
-            if user:
+            if user and user.is_verify:
+
                 logger.info("User is successfully logged in")
 
                 return Response({'success': True, 'message': 'Login Success', 'data': {'token_key': user.token}})
@@ -70,14 +65,15 @@ class UserLoginApi(APIView):
             return Response({'success': False, 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class VarifyUser(APIView):
     """
-        Validating the token if the user is valid or not
+    Validating the token if the user is valid or not
     """
 
     def get(self, request, token):
         try:
-            decode_token = Jwt.decode(token=token)
+            decode_token = Jwt.decode_token(token=token)
             user = User.objects.get(username=decode_token.get('username'))
             user.is_verify = True
             user.save()
@@ -85,4 +81,6 @@ class VarifyUser(APIView):
 
         except Exception as e:
             logging.error(e)
-        return Response({'message': "nck"}, status=status.HTTP_400_BAD_REQUEST)
+            print(e)
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
