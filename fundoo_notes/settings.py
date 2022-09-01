@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
-
+from datetime import datetime, timedelta
 from pathlib import Path
 import os
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'user',
     'rest_framework',
     'notes'
+
 ]
 
 MIDDLEWARE = [
@@ -80,7 +81,7 @@ WSGI_APPLICATION = 'fundoo_notes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fundoo',
+        'NAME': 'fundoo1',
         'USER': 'postgres',
         'PASSWORD': 'puja17rana',
         'HOST': '127.0.0.1',
@@ -146,10 +147,21 @@ LOGGING = {
     },
     'formatter': {
         'simple': {
-            'format': '{levelname} {message}',
+            'format': '%(lineno)d %(levelname)s %(asctime)s %(module)s: %(message)s',
             'style': '{'
         }
     }
 }
 
 AUTH_USER_MODEL = 'user.User'
+JWT_SECRET_KEY = 'secret'
+JWT_EXPIRING_TIME = datetime.now() + timedelta(hours=24)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'p74174287@gmail.com'
+EMAIL_HOST_PASSWORD = 'idwuunupswwcnbzt'
+
+

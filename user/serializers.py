@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from user.models import User
 
 
@@ -12,3 +13,5 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validate_data):
         return User.objects.create_user(**validate_data)
+
+
