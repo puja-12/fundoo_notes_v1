@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'user',
     'rest_framework',
     'notes'
+
 ]
 
 MIDDLEWARE = [

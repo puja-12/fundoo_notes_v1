@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 
 import user
 from notes.serializers import NotesSerializer
+from notes.utils import verify_token
 from user.models import User
 from notes.models import Notes
 import logging
@@ -16,13 +17,15 @@ logger = logging.getLogger('django')
 
 class NotesAPIView(APIView):
 
+    @verify_token
     def get(self, request):
         """
         function for getting all the notes of the user
         """
         try:
+            user_id = request.data.get('user')
+            note = Notes.objects.filter(user=user_id)
 
-            note = Notes.objects.filter(user=request.data.get('user_id'))
             serializer = NotesSerializer(note, many=True)
             serialized_data = serializer.data
 
@@ -36,6 +39,7 @@ class NotesAPIView(APIView):
                              'message': str(e)
                              }, status=status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def post(self, request):
         """
             function for creating notes for a particular user
@@ -58,6 +62,7 @@ class NotesAPIView(APIView):
                              'message': "Something went wrong",
                              'data': str(e)}, status=status.HTTP_417_EXPECTATION_FAILED)
 
+    @verify_token
     def put(self, request):
 
         """
@@ -79,13 +84,14 @@ class NotesAPIView(APIView):
                              'message': "Something went wrong",
                              }, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
+    @verify_token
+    def delete(self, request,id):
         """
             function for deleting note
         """
         try:
             pk = request.data.get('id')
-            data = Notes.objects.get(pk=pk)
+            data = Notes.objects.get(pk=id)
             data.delete()
 
             logger.info("Notes deleted successfully")
@@ -94,5 +100,5 @@ class NotesAPIView(APIView):
                              }, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
-            return Response({'success': False, 'message': "Something went wrong",
+            return Response({'success': False, 'message': "Something went wrong", 'data': f"error: {e}"
                              }, status=status.HTTP_404_NOT_FOUND)

@@ -13,16 +13,15 @@ class Email:
         try:
             mail_subject = "Verification mail"
             token = Jwt.encode_token(payload={'user_id': id,
-                                        'username': username
+                                              'username': username
 
-                                        })
+                                              })
             mail_message = "Click on this http://127.0.0.1:8000/user/verify/" + token
 
-            send= send_mail(mail_subject,
-                      mail_message,
-                      settings.EMAIL_HOST_USER,
-                      [email], fail_silently=False)
-            print(send,"fghjgh")
+            send = send_mail(mail_subject,
+                             mail_message,
+                             settings.EMAIL_HOST_USER,
+                             [email], fail_silently=False)
 
 
         except SMTPAuthenticationError as e:
@@ -31,6 +30,3 @@ class Email:
 
         except Exception as e:
             print(e)
-
-
-

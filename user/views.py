@@ -20,13 +20,12 @@ class UserRegisterApiView(APIView):
         """
         try:
             data = request.data
-            print(data)
             serializer = RegisterSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             Email.verify_user(id=serializer.data.get('id'), username=serializer.data.get('username'),
                               email=serializer.data.get('email'))
-            # Email.verify_user(**data)
+
             return Response(
                 {"message": "Registration Successful, Please verified your Email ", "data": serializer.data},
                 status.HTTP_200_OK)
@@ -36,7 +35,6 @@ class UserRegisterApiView(APIView):
             return Response({'message': e.detail}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            print(e)
             logger.exception(e)
             return Response({'message': 'invalid details'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -81,6 +79,5 @@ class VarifyUser(APIView):
 
         except Exception as e:
             logging.error(e)
-            print(e)
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
