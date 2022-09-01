@@ -48,7 +48,7 @@ class UserLoginApi(APIView):
 
         try:
 
-            user = authenticate(**request.data)
+            user = authenticate(username=request.data.get("username"),password=request.data.get("password"))
             if user and user.is_verify:
 
                 logger.info("User is successfully logged in")

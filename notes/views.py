@@ -85,13 +85,13 @@ class NotesAPIView(APIView):
                              }, status=status.HTTP_400_BAD_REQUEST)
 
     @verify_token
-    def delete(self, request,id):
+    def delete(self, request):
         """
             function for deleting note
         """
         try:
             pk = request.data.get('id')
-            data = Notes.objects.get(pk=id)
+            data = Notes.objects.get(pk=pk)
             data.delete()
 
             logger.info("Notes deleted successfully")
