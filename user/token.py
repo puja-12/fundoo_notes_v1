@@ -17,7 +17,7 @@ class Jwt:
             if payload.get('exp') is None:
                 payload.update({"exp": settings.JWT_EXPIRING_TIME})
 
-            token_encoded = jwt.encode(payload, settings.JWT_SECRET_KEY,
+            return jwt.encode(payload, settings.JWT_SECRET_KEY,
                                        algorithm="HS256")
             return token_encoded
         except Exception as e:

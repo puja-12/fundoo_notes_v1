@@ -48,11 +48,12 @@ class UserLoginApi(APIView):
 
         try:
 
-            user = authenticate(**request.data)
+            user = authenticate(username=request.data.get("username"),password=request.data.get("password"))
             if user and user.is_verify:
 
                 logger.info("User is successfully logged in")
-                return Response({'success': True, 'message': 'Login Success', 'data': {'token_key': user.token}})
+                return Response({'success': True, 'message': 'Login Success', 'data': {'token_key': user.token}}
+                                ,status=status.HTTP_200_OK)
 
             return Response({'success': False, 'message': 'Invalid credentials used!'},
                             status=status.HTTP_401_UNAUTHORIZED)

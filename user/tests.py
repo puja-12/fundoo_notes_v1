@@ -24,7 +24,7 @@ def test_login_api_with_invalid_credentials(client):
 def test_as_login_successfully(client):
     # Create user
     User.objects.create_user(username='pooja', email='puja@gmail.com', phone=123456789, location='delhi',
-                             password='test@123')
+                             password='test@123',is_verify=True)
     url = reverse('log_in')
     data = {'username': 'pooja', 'password': 'test@123'}
     response = client.post(url, data, content_type="application/json")
@@ -38,8 +38,8 @@ def test_response_as_registration_successfully(client):
     data = {'username': 'pooja', 'email': 'pooja@gmail.com', 'phone': '123456789', 'location': 'delhi',
             'password': 'test@123'}
     response = client.post(url, data, format='json', content_type="application/json")
-    assert response.status_code == 201
-    assert response.data['message'] == 'Register successfully'
+    assert response.status_code == 200
+
 
 
 @pytest.mark.django_db
@@ -48,4 +48,4 @@ def test_registration_with_invalid_details(client):
     data = {'email': 'puja@gmail.com', 'phone': '123455678',
             'password': 'test@123'}
     response = client.post(url, data, format='json', content_type="application/json")
-    assert response.status_code == 406
+    assert response.status_code == 400
