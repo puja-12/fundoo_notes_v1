@@ -73,8 +73,7 @@ class NotesAPIView(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            return Response({'success': True,
-                             'message': "Successfully updated the notes", }, status=status.HTTP_200_OK)
+            return Response({'data': serializer.data}, status=status.HTTP_200_OK)
 
         except Exception as e:
             logger.exception(e)
@@ -98,10 +97,9 @@ class NotesAPIView(APIView):
             note.delete()
 
             logger.info("Notes deleted successfully")
-            return Response({'success': True,
-                             'message': "Notes deleted successfully",
+            return Response({{'data': 'deleted'},
                              }, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
-            return Response({'success': False, 'message': "Something went wrong", 'data': f"error: {e}"
+            return Response({'message': 'unexpected error', 'data': f"error: {e}"
                              }, status=status.HTTP_404_NOT_FOUND)
