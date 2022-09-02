@@ -161,4 +161,9 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'p74174287@gmail.com'
 EMAIL_HOST_PASSWORD = 'idwuunupswwcnbzt'
 
+CACHES = {"host":"localhost", "port":6379, "db":0}
+
+
+
+
 

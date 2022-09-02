@@ -1,10 +1,10 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from notes.models import Notes
 
-import user
 from notes.serializers import NotesSerializer
-from notes.utils import verify_token
+from notes.utils import verify_token, RedisNoteAPI
 from user.models import User
 from notes.models import Notes
 import logging
@@ -23,16 +23,13 @@ class NotesAPIView(APIView):
         function for getting all the notes of the user
         """
         try:
-            user_id = request.data.get('user')
-            note = Notes.objects.filter(user=user_id)
 
-            serializer = NotesSerializer(note, many=True)
-            serialized_data = serializer.data
-
+            # note = Notes.objects.filter(user=user_id)
+            # serializer = NotesSerializer(note, many=True)
+            # serialized_data = serializer.data
+            data = RedisNoteAPI().get_note(request.data.get('user')).values()
             logger.info("User successfully retrieve the data")
-            return Response({'success': True,
-                             'message': "Successfully retrieve the notes",
-                             'data': serialized_data, }, status=status.HTTP_200_OK)
+            return Response({"data": data}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return Response({'success': False,
@@ -46,10 +43,11 @@ class NotesAPIView(APIView):
         """
 
         try:
-
+            user_id = request.data.get('user')
             serializer = NotesSerializer(data=request.data)
             serializer.is_valid()
             serializer.save()
+            RedisNoteAPI().create_note(user_id, note_id=dict(serializer.data))
 
             logger.info("Notes created successfully")
             return Response({'success': True,
@@ -90,9 +88,14 @@ class NotesAPIView(APIView):
             function for deleting note
         """
         try:
-            pk = request.data.get('id')
-            data = Notes.objects.get(pk=pk)
-            data.delete()
+
+            # pk = request.data.get('id')
+            # data = Notes.objects.get(pk=pk)
+            # data.delete()
+
+            note = Notes.objects.get(id=request.data.get('id'))
+            RedisNoteAPI().delete_note(request.data.get('user'), note.id)
+            note.delete()
 
             logger.info("Notes deleted successfully")
             return Response({'success': True,
