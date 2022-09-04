@@ -161,7 +161,12 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'p74174287@gmail.com'
 EMAIL_HOST_PASSWORD = 'idwuunupswwcnbzt'
 
-CACHES = {"host":"localhost", "port":6379, "db":0}
+RADIS_CONF = {"host":"localhost", "port":6379, "db":0}
+
+
+CELERY_TIMEZONE = "Asia/Kolkatta"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
 
 

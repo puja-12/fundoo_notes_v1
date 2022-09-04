@@ -2,7 +2,9 @@ import redis
 import json
 from django.conf import  settings
 
-redis_cache = redis.Redis(**settings.CACHES)
+redis_cache = redis.Redis(**settings.RADIS_CONF)
+# redis_cache = redis.Redis(host='localhost', port=6379, db=0)
+
 
 
 class RedisFunction:

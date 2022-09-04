@@ -1,16 +1,22 @@
 from datetime import datetime, timedelta
 from smtplib import SMTPAuthenticationError
+from time import sleep
 
 from django.conf import settings
 from django.core.mail import send_mail
+from rest_framework.reverse import reverse
+from celery import shared_task
 
 from user.token import Jwt
 
 
+
 class Email:
     @staticmethod
-    def verify_user(id, username, email):
+    @shared_task
+    def send_email(id, username, email):
         try:
+            sleep(20)
             mail_subject = "Verification mail"
             token = Jwt.encode_token(payload={'user_id': id,
                                               'username': username

@@ -9,6 +9,8 @@ from user.serializers import RegisterSerializer
 from user.token import Jwt
 from user.utils import Email
 
+
+
 logger = logging.getLogger('django')
 
 
@@ -23,8 +25,10 @@ class UserRegisterApiView(APIView):
             serializer = RegisterSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            Email.verify_user(id=serializer.data.get('id'), username=serializer.data.get('username'),
+
+            Email.send_email(id=serializer.data.get('id'), username=serializer.data.get('username'),
                               email=serializer.data.get('email'))
+
 
             return Response(
                 {"message": "Registration Successful, Please verified your Email ", "data": serializer.data},
