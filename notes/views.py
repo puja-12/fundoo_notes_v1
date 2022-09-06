@@ -1,14 +1,15 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from notes.models import Notes
 
-from notes.serializers import NotesSerializer
+from labels.models import Labels
+from labels.serializers import LabelSerializer
+
+from notes.serializers import NotesSerializer, ShareNoteSerializer, NoteLabelSerializer
 from notes.utils import verify_token, RedisNoteAPI
 from user.models import User
 from notes.models import Notes
 import logging
-from django.shortcuts import render
 
 logger = logging.getLogger('django')
 
@@ -96,10 +97,75 @@ class NotesAPIView(APIView):
             RedisNoteAPI().delete_note(request.data.get('user'), note.id)
             note.delete()
 
-            logger.info("Notes deleted successfully")
             return Response({{'data': 'deleted'},
                              }, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return Response({'message': 'unexpected error', 'data': f"error: {e}"
                              }, status=status.HTTP_404_NOT_FOUND)
+
+
+class LabelAPIView(APIView):
+
+    @verify_token
+    def post(self, request):
+
+        try:
+            serializer = NoteLabelSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            print(serializer.data)
+            return Response({
+                "message": "label found", "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @verify_token
+    def get(self, request):
+        """
+        get note of user
+        """
+        try:
+            label = Labels.objects.all()
+            return Response({
+                "message": "label found", "data": LabelSerializer(label, many=True).data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CollaboratorAPIView(APIView):
+
+    @verify_token
+    def get(self, request):
+        """
+        get note of user
+        """
+        try:
+            user = User.objects.get(id=request.data['user'])
+            note = user.collaborator.all()
+            return Response({
+                "message": "user found", "data": ShareNoteSerializer(note, many=True).data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @verify_token
+    def post(self, request):
+        """
+        Add a new note with label
+        """
+        try:
+            serializer = ShareNoteSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response({
+                "message": "user found", "data": serializer.data
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

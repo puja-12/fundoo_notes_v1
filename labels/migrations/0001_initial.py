@@ -11,18 +11,15 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('labels', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Notes',
+            name='Labels',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=500)),
-                ('description', models.TextField(max_length=1200)),
-                ('collaborator', models.ManyToManyField(related_name='collaborator', to=settings.AUTH_USER_MODEL)),
-                ('labels', models.ManyToManyField(to='labels.labels')),
+                ('label', models.CharField(max_length=150)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),

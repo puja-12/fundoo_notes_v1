@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'rest_framework',
-    'notes'
+    'notes',
+    'labels'
 
 ]
 
@@ -78,7 +79,7 @@ WSGI_APPLICATION = 'fundoo_notes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fundoo1',
+        'NAME': 'fundoo_notes',
         'USER': 'postgres',
         'PASSWORD': 'puja17rana',
         'HOST': '127.0.0.1',
