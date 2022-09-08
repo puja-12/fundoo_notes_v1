@@ -117,6 +117,7 @@ class NoteLabelAPIView(APIView):
             print(e)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def delete(self, request):
         """
         delete label of user
@@ -151,6 +152,7 @@ class CollaboratorAPIView(APIView):
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @verify_token
     def delete(self, request):
         """
         delete note of user
