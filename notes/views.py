@@ -1,15 +1,16 @@
+import logging
+
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from labels.models import Labels
-from labels.serializers import LabelSerializer
-
-from notes.serializers import NotesSerializer, ShareNoteSerializer, NoteLabelSerializer
-from notes.utils import verify_token, RedisNoteAPI
-from user.models import User
 from notes.models import Notes
-import logging
+from notes.serializers import NotesSerializer, ShareNoteSerializer, NoteLabelSerializer
+from notes.utils import verify_token
+from user.models import User
 
 logger = logging.getLogger('django')
 
@@ -24,13 +25,10 @@ class NotesAPIView(APIView):
         function for getting all the notes of the user
         """
         try:
-
-            # note = Notes.objects.filter(user=user_id)
-            # serializer = NotesSerializer(note, many=True)
-            # serialized_data = serializer.data
-            data = RedisNoteAPI().get_note(request.data.get('user')).values()
+            look_ups= Q(user=request.data.get('user') ) | Q(collaborator__id=request.data.get("user"))
+            notes= Notes.objects.filter(look_ups)
             logger.info("User successfully retrieve the data")
-            return Response({"data": data}, status=status.HTTP_200_OK)
+            return Response({"data": NotesSerializer(notes, many=True).data}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return Response({'success': False,
@@ -44,12 +42,10 @@ class NotesAPIView(APIView):
         """
 
         try:
-            user_id = request.data.get('user')
+
             serializer = NotesSerializer(data=request.data)
             serializer.is_valid()
             serializer.save()
-            RedisNoteAPI().create_note(user_id, note_id=dict(serializer.data))
-
             logger.info("Notes created successfully")
             return Response({'success': True,
                              'message': "Notes Create Successfully", "data": serializer.data},
@@ -83,35 +79,34 @@ class NotesAPIView(APIView):
                              }, status=status.HTTP_400_BAD_REQUEST)
 
     @verify_token
-    def delete(self, request):
+    def delete(self, request, id):
         """
             function for deleting note
         """
         try:
 
-            # pk = request.data.get('id')
-            # data = Notes.objects.get(pk=pk)
-            # data.delete()
+            data = Notes.objects.get(pk=id)
+            data.delete()
 
-            note = Notes.objects.get(id=request.data.get('id'))
-            RedisNoteAPI().delete_note(request.data.get('user'), note.id)
-            note.delete()
-
-            return Response({{'data': 'deleted'},
-                             }, status=status.HTTP_200_OK)
+            return Response({'data': 'deleted'},
+                              status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return Response({'message': 'unexpected error', 'data': f"error: {e}"
                              }, status=status.HTTP_404_NOT_FOUND)
 
 
-class LabelAPIView(APIView):
+class NoteLabelAPIView(APIView):
 
     @verify_token
     def post(self, request):
+        """
+           creating label for user
+           """
 
         try:
-            serializer = NoteLabelSerializer(data=request.data)
+            label = Notes.objects.get(id=request.data.get("id"))
+            serializer = NoteLabelSerializer(label, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             print(serializer.data)
@@ -122,50 +117,54 @@ class LabelAPIView(APIView):
             print(e)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @verify_token
-    def get(self, request):
+    def delete(self, request):
         """
-        get note of user
+        delete label of user
         """
         try:
-            label = Labels.objects.all()
-            return Response({
-                "message": "label found", "data": LabelSerializer(label, many=True).data
-            }, status=status.HTTP_200_OK)
+            data = get_object_or_404(Labels, id=request.data.get("labels"))
+            notes=Notes.objects.get(id=request.data.get("id"))
+            notes.labels.remove(data)
+
+            return Response({'data': 'deleted'}
+                            , status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CollaboratorAPIView(APIView):
 
     @verify_token
-    def get(self, request):
-        """
-        get note of user
-        """
-        try:
-            user = User.objects.get(id=request.data['user'])
-            note = user.collaborator.all()
-            return Response({
-                "message": "user found", "data": ShareNoteSerializer(note, many=True).data
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            print(e)
-            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    @verify_token
     def post(self, request):
         """
-        Add a new note with label
+        Add a new note
         """
         try:
-            serializer = ShareNoteSerializer(data=request.data)
+            note = Notes.objects.get(id=request.data.get("id"))
+            serializer = ShareNoteSerializer(note, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response({
                 "message": "user found", "data": serializer.data
             }, status=status.HTTP_200_OK)
 
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        """
+        delete note of user
+        """
+        try:
+
+            data = get_object_or_404(User,id=request.data.get("user_id"))
+            print(data)
+            note=get_object_or_404(Notes,id=request.data.get("id"))
+            print(note)
+            note.collaborator.remove(data)
+
+
+            return Response({'data': 'deleted'}
+                             , status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

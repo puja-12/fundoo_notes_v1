@@ -7,13 +7,15 @@ from notes.models import Notes
 class NotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notes
-        fields = ['title', 'description', 'user', 'id']
+        fields = ['title', 'description', 'user', 'id','collaborator']
+        read_only_fields =['collaborator']
+
 
 
 class NoteLabelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notes
-        fields = [ 'user','labels', 'id']
+        fields = [ 'labels', 'id']
 
 
 class ShareNoteSerializer(serializers.ModelSerializer):
@@ -23,4 +25,4 @@ class ShareNoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notes
-        fields = [ 'user','id', 'collaborator']
+        fields = [ 'id', 'collaborator']
