@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'user',
     'rest_framework',
     'notes',
-    'labels'
+    'labels',
+    'drf_yasg'
 
 ]
 

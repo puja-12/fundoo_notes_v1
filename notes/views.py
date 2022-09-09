@@ -11,6 +11,8 @@ from notes.models import Notes
 from notes.serializers import NotesSerializer, ShareNoteSerializer, NoteLabelSerializer
 from notes.utils import verify_token
 from user.models import User
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 logger = logging.getLogger('django')
 
@@ -18,6 +20,10 @@ logger = logging.getLogger('django')
 # Create your views here.
 
 class NotesAPIView(APIView):
+
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
+    ])
 
     @verify_token
     def get(self, request):
@@ -35,6 +41,18 @@ class NotesAPIView(APIView):
                              'message': str(e)
                              }, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
+    ],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description="description")
+            }
+        ))
     @verify_token
     def post(self, request):
         """
@@ -57,6 +75,19 @@ class NotesAPIView(APIView):
                              'message': "Something went wrong",
                              'data': str(e)}, status=status.HTTP_417_EXPECTATION_FAILED)
 
+
+
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
+    ],
+        request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'id': openapi.Schema(type=openapi.TYPE_STRING, description="id"),
+            'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
+            'description': openapi.Schema(type=openapi.TYPE_STRING, description="description")
+        }
+    ))
     @verify_token
     def put(self, request):
 
@@ -78,6 +109,13 @@ class NotesAPIView(APIView):
                              'message': "Something went wrong",
                              }, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
+    ],
+
+    )
     @verify_token
     def delete(self, request, id):
         """
@@ -124,8 +162,8 @@ class NoteLabelAPIView(APIView):
         """
         try:
             data = get_object_or_404(Labels, id=request.data.get("labels"))
-            notes=Notes.objects.get(id=request.data.get("id"))
-            notes.labels.remove(data)
+            note=get_object_or_404(Notes,id=request.data.get("id"))
+            note.labels.remove(data)
 
             return Response({'data': 'deleted'}
                             , status=status.HTTP_200_OK)
@@ -160,9 +198,7 @@ class CollaboratorAPIView(APIView):
         try:
 
             data = get_object_or_404(User,id=request.data.get("user_id"))
-            print(data)
             note=get_object_or_404(Notes,id=request.data.get("id"))
-            print(note)
             note.collaborator.remove(data)
 
 

@@ -8,6 +8,8 @@ from user.models import User
 from user.serializers import RegisterSerializer
 from user.token import Jwt
 from user.utils import Email
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 
@@ -15,7 +17,20 @@ logger = logging.getLogger('django')
 
 
 class UserRegisterApiView(APIView):
-
+    @swagger_auto_schema(
+        operation_summary="registration",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
+                'first_name': openapi.Schema(type=openapi.TYPE_STRING, description='first_name'),
+                'last_name': openapi.Schema(type=openapi.TYPE_STRING, description='last_name'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='email'),
+                'phone': openapi.Schema(type=openapi.TYPE_STRING, description='phone'),
+                'location': openapi.Schema(type=openapi.TYPE_STRING, description='location'),
+            }
+        ))
     def post(self, request):
         """
         post method for registering a user
@@ -44,6 +59,15 @@ class UserRegisterApiView(APIView):
 
 
 class UserLoginApi(APIView):
+    @swagger_auto_schema(
+        operation_summary="login",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'username': openapi.Schema(type=openapi.TYPE_STRING, description='username'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='password'),
+            }
+        ))
 
     def post(self, request):
         """
