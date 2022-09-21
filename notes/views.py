@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status, generics, permissions
 
 from labels.models import Labels
 from notes.models import Notes
@@ -19,20 +20,20 @@ logger = logging.getLogger('django')
 
 # Create your views here.
 
-class NotesAPIView(APIView):
+class NotesAPIView(generics.GenericAPIView):
 
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
     ])
-
     @verify_token
     def get(self, request):
         """
         function for getting all the notes of the user
         """
         try:
-            look_ups= Q(user=request.data.get('user') ) | Q(collaborator__id=request.data.get("user"))
-            notes= Notes.objects.filter(look_ups)
+            look_ups = Q(user=request.data.get('user')) | Q(collaborator__id=request.data.get("user"))
+
+            notes = Notes.objects.filter(look_ups).order_by("-is_pinned")
             logger.info("User successfully retrieve the data")
             return Response({"data": NotesSerializer(notes, many=True).data}, status=status.HTTP_200_OK)
         except Exception as e:
@@ -40,8 +41,6 @@ class NotesAPIView(APIView):
             return Response({'success': False,
                              'message': str(e)
                              }, status=status.HTTP_400_BAD_REQUEST)
-
-
 
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
@@ -75,19 +74,17 @@ class NotesAPIView(APIView):
                              'message': "Something went wrong",
                              'data': str(e)}, status=status.HTTP_417_EXPECTATION_FAILED)
 
-
-
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
     ],
         request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'id': openapi.Schema(type=openapi.TYPE_STRING, description="id"),
-            'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
-            'description': openapi.Schema(type=openapi.TYPE_STRING, description="description")
-        }
-    ))
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'id': openapi.Schema(type=openapi.TYPE_STRING, description="id"),
+                'title': openapi.Schema(type=openapi.TYPE_STRING, description="title"),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description="description")
+            }
+        ))
     @verify_token
     def put(self, request):
 
@@ -109,8 +106,6 @@ class NotesAPIView(APIView):
                              'message': "Something went wrong",
                              }, status=status.HTTP_400_BAD_REQUEST)
 
-
-
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('TOKEN', openapi.IN_HEADER, "token", type=openapi.TYPE_STRING)
     ],
@@ -127,7 +122,7 @@ class NotesAPIView(APIView):
             data.delete()
 
             return Response({'data': 'deleted'},
-                              status=status.HTTP_200_OK)
+                            status=status.HTTP_200_OK)
         except Exception as e:
             logger.exception(e)
             return Response({'message': 'unexpected error', 'data': f"error: {e}"
@@ -162,7 +157,7 @@ class NoteLabelAPIView(APIView):
         """
         try:
             data = get_object_or_404(Labels, id=request.data.get("labels"))
-            note=get_object_or_404(Notes,id=request.data.get("id"))
+            note = get_object_or_404(Notes, id=request.data.get("id"))
             note.labels.remove(data)
 
             return Response({'data': 'deleted'}
@@ -197,12 +192,32 @@ class CollaboratorAPIView(APIView):
         """
         try:
 
-            data = get_object_or_404(User,id=request.data.get("user_id"))
-            note=get_object_or_404(Notes,id=request.data.get("id"))
+            data = get_object_or_404(User, id=request.data.get("user_id"))
+            note = get_object_or_404(Notes, id=request.data.get("id"))
             note.collaborator.remove(data)
 
-
             return Response({'data': 'deleted'}
-                             , status=status.HTTP_200_OK)
+                            , status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PinnedNotes(APIView):
+
+    def put(self, request, *args, **kwargs):
+        try:
+
+            id = self.kwargs.get("id")
+            note_id = id
+            note = Notes.objects.get(id=note_id)
+            if not note.is_pinned:
+                note.is_pinned = True
+                note.save()
+                return Response({'data': 'is pinned'}, status=status.HTTP_200_OK)
+
+            elif note.is_pinned:
+                note.is_pinned = False
+                note.save()
+                return Response({'data': ' unpinned'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

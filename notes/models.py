@@ -11,8 +11,10 @@ class Notes(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     collaborator = models.ManyToManyField(User, related_name='collaborator')
     labels = models.ManyToManyField(Labels)
+    is_pinned = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-is_pinned', '-id']
 
     def __str__(self):
         return self.title
-
-

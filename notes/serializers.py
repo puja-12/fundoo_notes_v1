@@ -7,7 +7,7 @@ from notes.models import Notes
 class NotesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notes
-        fields = ['title', 'description', 'user', 'id','collaborator']
+        fields = ['title', 'description', 'user', 'id','collaborator','is_pinned']
         read_only_fields =['collaborator']
 
 
@@ -26,3 +26,10 @@ class ShareNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notes
         fields = [ 'id', 'collaborator']
+
+
+class PinSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notes
+        fields = ['id', 'title', 'description', 'is_pinned']
+        read_only_fields = ['id', 'title']
