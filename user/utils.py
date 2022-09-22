@@ -10,7 +10,6 @@ from celery import shared_task
 from user.token import Jwt
 
 
-
 class Email:
     @staticmethod
     @shared_task
@@ -36,3 +35,11 @@ class Email:
 
         except Exception as e:
             print(e)
+
+    @classmethod
+    def verify_user(cls, email, token):
+        url = reverse("token_string", kwargs={"token": token})
+        mail_subject = "Verification mail from celery"
+        mail_message = f"Click on this {settings.BASE_URL}{url}"
+        email_list = [email]
+        cls.send_email(email_list, mail_subject, mail_message)

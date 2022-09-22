@@ -8,6 +8,8 @@ from user.models import User
 from user.serializers import RegisterSerializer
 from user.token import Jwt
 from user.utils import Email
+from . import utils
+from .task import verify_user_task
 
 
 
@@ -26,10 +28,9 @@ class UserRegisterApiView(APIView):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            Email.send_email(id=serializer.data.get('id'), username=serializer.data.get('username'),
+            token = Email.send_email(id=serializer.data.get('id'), username=serializer.data.get('username'),
                               email=serializer.data.get('email'))
-
-
+            verify_user_task.delay(request.data.get('email'), token)
             return Response(
                 {"message": "Registration Successful, Please verified your Email ", "data": serializer.data},
                 status.HTTP_200_OK)
