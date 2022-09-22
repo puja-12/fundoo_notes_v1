@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from labels.models import Labels
+# from labels.models import Labels
 from notes.models import Notes
 
 

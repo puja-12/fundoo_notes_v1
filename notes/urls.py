@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from notes.views import NotesAPIView, NoteLabelAPIView, CollaboratorAPIView, PinnedNotes
+from notes.views import NotesAPIView, CollaboratorAPIView, PinnedNotes, NoteLabelAPIView
 
 urlpatterns = [
     path('note_api/', NotesAPIView.as_view(),name="note_api"),

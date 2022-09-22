@@ -37,7 +37,7 @@ urlpatterns = [
     # path('admin/', admin.site.urls),
     path("user/", include('user.urls')),
     path("notes/",include('notes.urls')),
-    path("labels/",include('labels.urls')),
+    # path("labels/",include('labels.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('user_mixin/', include('user_mixin.urls')),
 ]

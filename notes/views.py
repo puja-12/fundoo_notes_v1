@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, generics, permissions
 
-from labels.models import Labels
+
 from notes.models import Notes
 from notes.serializers import NotesSerializer, ShareNoteSerializer, NoteLabelSerializer
 from notes.utils import verify_token

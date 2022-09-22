@@ -1,8 +1,6 @@
 import logging
 from django.contrib.auth import authenticate
-from rest_framework import status, permissions
-from rest_framework.generics import UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
@@ -135,4 +133,3 @@ class UpdatePassword(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-from  django.utils.deprecation import MiddlewareMixin
