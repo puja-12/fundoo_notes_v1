@@ -221,3 +221,6 @@ class PinnedNotes(APIView):
                 return Response({'data': ' unpinned'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
