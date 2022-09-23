@@ -48,7 +48,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'fundoo_notes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fundoo_notes2',
+        'NAME': 'fundoo_notes3',
         'USER': 'postgres',
         'PASSWORD': 'puja17rana',
         'HOST': '127.0.0.1',
@@ -134,7 +134,7 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': 'fundoo.log',
+            'filename': BASE_DIR / 'fundoo.log',
         },
     },
     'loggers': {
@@ -163,14 +163,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'p74174287@gmail.com'
 EMAIL_HOST_PASSWORD = 'idwuunupswwcnbzt'
 
-RADIS_CONF = {"host":"localhost", "port":6379, "db":0}
-
+RADIS_CONF = {"host": "localhost", "port": 6379, "db": 0}
 
 CELERY_TIMEZONE = "Asia/Kolkatta"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-
-
-
-
-

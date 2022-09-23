@@ -4,6 +4,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
+
+from sender import pika_task
 from user.models import User
 from user.serializers import RegisterSerializer, ChangePasswordSerializer
 from user.token import Jwt
@@ -38,20 +40,24 @@ class UserRegisterApiView(APIView):
             serializer = RegisterSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            token = Jwt.encode_token(payload={'user_id': serializer.data.get('id'),
+                                              'username':serializer.data.get('username')
 
-            Email.send_email(id=serializer.data.get('id'), username=serializer.data.get('username'),
-                             email=serializer.data.get('email'))
+                                              })
+            url = "http://127.0.0.1:8000/user/verify/" + token
+            data = {'email': serializer.data.get('email'), 'id': serializer.data.get('id'),'url':url}
+            pika_task(data)
 
             return Response(
                 {"message": "Registration Successful, Please verified your Email ", "data": serializer.data},
                 status.HTTP_200_OK)
 
         except ValidationError as e:
-            logger.exception(e)
+
             return Response({'message': e.detail}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            logger.exception(e)
+
             return Response({'message': 'invalid details'}, status=status.HTTP_400_BAD_REQUEST)
 
 
